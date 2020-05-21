@@ -46,9 +46,9 @@ let Solver = {
 
     renderQuestion: (isDown, number, question) =>{
         if(isDown)
-            document.getElementById("down").appendChild(Solver.generateQuestionField(number, "d"));
+            document.getElementById("down").appendChild(Solver.generateQuestionField(number, question));
         else
-            document.getElementById("across").appendChild(Solver.generateQuestionField(number, "a"));
+            document.getElementById("across").appendChild(Solver.generateQuestionField(number, question));
     },
 
     generateQuestionField: (number, question) =>{
@@ -120,6 +120,8 @@ let Solver = {
             Solver.crosswordArray = snapshot.val().crossword;
             Solver.acrossQuestions = snapshot.val().across;
             Solver.downQuestions = snapshot.val().down;
+            console.log(Solver.acrossQuestions);
+            console.log(Solver.downQuestions);
             Solver.lenTR = Solver.crosswordArray.length;
             Solver.lenTD = Solver.crosswordArray[0].length;
             document.body.dispatchEvent(Solver.bdLoadEvent);
@@ -130,84 +132,96 @@ let Solver = {
         return c.toLowerCase() != c.toUpperCase();
     },
 
+    emptyFlag: false,
+    symbolFlag: false,
+
     addEventsOnCells: () =>{
         document.querySelectorAll(".puzzle_cell_input").forEach(elem =>{
-            elem.addEventListener("keydown", (e)=>
+            elem.addEventListener("keyup", (e)=>
             {
+                if(!Solver.symbolFlag || !Solver.emptyFlag)
+                    return;
+                e.target.value = e.target.value[0];
+                if(!Solver.isLetter(e.target.value))
+                {
+                    e.target.value = "";
+                    return;
+                }
                 let indexes = e.target.id.split('-');
                 indexes[0] = Number(indexes[0]);
                 indexes[1] = Number(indexes[1]);
-                if(!Solver.isLetter(e.target.value) && Solver.isLetter(String.fromCharCode(e.keyCode)))
-                {
-                    Solver.solvingCrossword[indexes[0]][indexes[1]] = String.fromCharCode(e.keyCode);
-                }
-                else if(Solver.isLetter(String.fromCharCode(e.keyCode)))
-                {
-                    e.target.value = String.fromCharCode(e.keyCode).toLowerCase();
-                    Solver.solvingCrossword[indexes[0]][indexes[1]] = String.fromCharCode(e.keyCode);
-                }
-                else if(e.keyCode == 39)
-                {
-                    while(true)
+                Solver.solvingCrossword[indexes[0]][indexes[1]] = e.target.value;
+                });
+                elem.addEventListener("keydown", (e)=>{
+                    let indexes = e.target.id.split('-');
+                    indexes[0] = Number(indexes[0]);
+                    indexes[1] = Number(indexes[1]);
+                    if(e.keyCode == 39)
                     {
-                        indexes[1]++;
-                        if(indexes[1] == Solver.lenTD)
-                            return;
-                        if(!document.getElementById(indexes[0] + "-" + indexes[1]).disabled)
-                            break;
+                        while(true)
+                        {
+                            indexes[1]++;
+                            if(indexes[1] == Solver.lenTD)
+                                return;
+                            if(!document.getElementById(indexes[0] + "-" + indexes[1]).disabled)
+                                break;
+                        }
+                        let cell = document.getElementById(indexes[0] + "-" + indexes[1]);
+                        if(cell)
+                            cell.focus();
                     }
-                    let cell = document.getElementById(indexes[0] + "-" + indexes[1]);
-                    if(cell)
-                        cell.focus();
-                }
-                else if(e.keyCode == 40)
-                {
-                    while(true)
+                    else if(e.keyCode == 40)
                     {
-                        indexes[0]++;
-                        if(indexes[0] == Solver.lenTR)
-                            return;
-                        if(!document.getElementById(indexes[0] + "-" + indexes[1]).disabled)
-                            break;
+                        while(true)
+                        {
+                            indexes[0]++;
+                            if(indexes[0] == Solver.lenTR)
+                                return;
+                            if(!document.getElementById(indexes[0] + "-" + indexes[1]).disabled)
+                                break;
+                        }
+                        let cell = document.getElementById(indexes[0] + "-" + indexes[1]);
+                        if(cell)
+                            cell.focus();
                     }
-                    let cell = document.getElementById(indexes[0] + "-" + indexes[1]);
-                    if(cell)
-                        cell.focus();
-                }
-                else if(e.keyCode == 37)
-                {
-                    while(true)
+                    else if(e.keyCode == 37)
                     {
-                        indexes[1]--;
-                        if(indexes[1] < 0)
-                            return;
-                        if(!document.getElementById(indexes[0] + "-" + indexes[1]).disabled)
-                            break;
+                        while(true)
+                        {
+                            indexes[1]--;
+                            if(indexes[1] < 0)
+                                return;
+                            if(!document.getElementById(indexes[0] + "-" + indexes[1]).disabled)
+                                break;
+                        }
+                        let cell = document.getElementById(indexes[0] + "-" + indexes[1]);
+                        if(cell)
+                            cell.focus();
                     }
-                    let cell = document.getElementById(indexes[0] + "-" + indexes[1]);
-                    if(cell)
-                        cell.focus();
-                }
-                else if(e.keyCode == 38)
-                {
-                    while(true)
+                    else if(e.keyCode == 38)
                     {
-                        indexes[0]--;
-                        if(indexes[0] < 0)
-                            return;
-                        if(!document.getElementById(indexes[0] + "-" + indexes[1]).disabled)
-                            break;
+                        while(true)
+                        {
+                            indexes[0]--;
+                            if(indexes[0] < 0)
+                                return;
+                            if(!document.getElementById(indexes[0] + "-" + indexes[1]).disabled)
+                                break;
+                        }
+                        let cell = document.getElementById(indexes[0] + "-" + indexes[1]);
+                        if(cell)
+                            cell.focus();
                     }
-                    let cell = document.getElementById(indexes[0] + "-" + indexes[1]);
-                    if(cell)
-                        cell.focus();
-                }
-                else if(e.keyCode == 8)
-                {
-                    e.target.value = "";
-                    Solver.solvingCrossword[indexes[0]][indexes[1]] = 0;
-                }
-            });
+                    else if(e.keyCode == 8)
+                    {
+                        e.target.value = "";
+                        Solver.solvingCrossword[indexes[0]][indexes[1]] = 0;
+                    }
+                    else
+                    {
+                        Solver.symbolFlag = true;
+                        Solver.emptyFlag = e.target.value.length == 0
+                    }});
         });
     },
 
