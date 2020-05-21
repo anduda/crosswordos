@@ -20,7 +20,7 @@ table {
 }
 
 td {
-    background: lightgray;
+    background: white;
     width: 4vh;
     height: 4vh;
     border-radius: 3px;
@@ -37,25 +37,32 @@ td b {
 
 td input[type=text]{
     text-align:center;
-    width:100%;
+    text-shadow: 0 0 0 black;
+    color: transparent;
+    width:98%;
     height: 100%;
     border:none;
-    background:transparent;
+    background: transparent;
     font-size: 3vh;
     margin-left: 0.5vh;
+    border-radius: 3px;
     outline: none;
 }
 
-tr td:not(:empty){
-    background: white;
+
+td:hover{
+	background: gray;
 }
 
-td:hover {
-	background: white;
+td:focus-within{
+    background: lightgreen;
 }
 
+body{
+    margin: 0;
+}
 
-body {
+#subbody {
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -157,17 +164,21 @@ main{
     flex-direction: column;
     border: 1px solid #000;
     height: 90vh;
+    width: 20vw;
 }
 
 .questions{
     height: 95%;
     overflow-y: scroll;
+    padding: 5px;
 }
 
 .question{
     margin: 5px;
+    width: 100%;
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
 }
 
 .question textarea{
@@ -188,9 +199,10 @@ main{
 }
 
 .questions span {
-    width: 5%;
+    width: 7%;
     cursor: default;
-    text-align: right;
+    text-align: left;
+    margin-right: 5px;
 }
 
 label{
