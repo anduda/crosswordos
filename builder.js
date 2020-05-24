@@ -9,7 +9,7 @@ let Builder = {
             <button type="submit">Find</button>
           </form>
         </div>
-        <a href="#/login">Log out</a>
+        <a href="#/login" id="logout">Log out</a>
     </nav>
 
     <main>
@@ -255,24 +255,77 @@ let Builder = {
     },
     emptyFlag: false,
     symbolFlag: false,
+    isVertical: false,
+
+    goNextCell: (i, j) =>
+    {
+        if(!Builder.isVertical)
+        {
+            j += 1;
+            let cell = document.getElementById(i + "-" + j);
+            if(cell)
+                cell.focus();
+        }
+        else
+        {
+            i += 1;
+            let cell = document.getElementById(i + "-" + j);
+            if(cell)
+                cell.focus();
+        }
+    },
+
+    goBackSell: (i, j) =>
+    {
+        if(!Builder.isVertical)
+        {
+            j -= 1;
+            let cell = document.getElementById(i + "-" + j);
+            if(cell)
+                cell.focus();
+        }
+        else
+        {
+            i -= 1;
+            let cell = document.getElementById(i + "-" + j);
+            if(cell)
+                cell.focus();
+        }
+    },
+
+    previousLetter: "",
 
     addEventsOnCells: () =>{
         document.querySelectorAll(".puzzle_cell_input").forEach(elem =>{
             elem.addEventListener("keyup", (e)=>
             {
-                if(!Builder.symbolFlag || !Builder.emptyFlag)
+                if(e.code == "Space")
+                {
+                    e.target.value = Builder.previousLetter;
+                    Builder.isVertical = !Builder.isVertical;
                     return;
+                }
                 let indexes = e.target.id.split('-');
                 indexes[0] = Number(indexes[0]);
                 indexes[1] = Number(indexes[1]);
-                e.target.value = e.target.value[0];
+                if(!Builder.symbolFlag)
+                {
+                    return;
+                }
+                if(!Builder.emptyFlag)
+                {
+                    Builder.goNextCell(indexes[0], indexes[1]);
+                    return;
+                }
                 if(!Builder.isLetter(e.target.value))
                 {
                     e.target.value = "";
                     return;
                 }
+                e.target.value = e.target.value[0];
                 Builder.crosswordArray[indexes[0]][indexes[1]].letter = e.target.value;
                 Builder.addNumber(indexes[0], indexes[1]);
+                Builder.goNextCell(indexes[0], indexes[1]);
             });
             elem.addEventListener("keydown", (e)=>{
                 Builder.symbolFlag = false;
@@ -311,6 +364,8 @@ let Builder = {
                 else if(e.keyCode == 8)
                 {
                     Builder.charFlag = true;
+                    if(e.target.value.length == 0)
+                        Builder.goBackSell(indexes[0], indexes[1]);
                     e.target.value = "";
                     Builder.deleteQuestion(Number(Builder.getB(indexes[0], indexes[1]).textContent));
                     Builder.getB(indexes[0], indexes[1]).innerHTML = "";
@@ -320,6 +375,7 @@ let Builder = {
                 {
                     Builder.symbolFlag = true;
                     Builder.emptyFlag = e.target.value.length == 0
+                    Builder.previousLetter = e.target.value;
                 }
             });
         });
@@ -345,20 +401,86 @@ let Builder = {
             });
     },
 
+
     saveToDb: () =>
     {
         Builder.getQuestionsForDb();
-        alert("Crossword id is " + (firebase.database().ref().push({
+        window.location.hash = "/solver/" + (firebase.database().ref().push({
                     across: Builder.acrossQuestions,
                     down: Builder.downQuestions,
                     crossword: Builder.crosswordArray
-            })).key);
+            })).key;
     },
 
     findCrossword: (e) =>
     {
         e.preventDefault();
         window.location.hash = "/solver/" + document.getElementById("find-input").value;    
+    },
+
+    isRowEmprty: (j) =>
+    {
+        let isNotEmpty = false;
+        for(let i = 0; i < Builder.lenTD; i++)
+        {
+            if(Builder.crosswordArray[j][i].letter != 0)
+            {
+                isNotEmpty = true;
+                break;
+            }
+        }
+        return !isNotEmpty;
+    },
+
+    isColumnEmpty: (j)=>
+    {
+        let isNotEmpty = false;
+        for(let i = 0; i < Builder.lenTR; i++)
+        {
+            if(Builder.crosswordArray[i][j].letter != 0)
+            {
+                isNotEmpty = true;
+                break;
+            }
+        }
+        return !isNotEmpty;
+    },
+
+    deleteEmptyRowsAndColumns: ()=>
+    {
+        while(true)
+        {
+            if(Builder.isRowEmprty(0))
+            {
+                Builder.lenTR--;
+                Builder.crosswordArray.shift();   
+            }
+            else if(Builder.isRowEmprty(Builder.lenTR - 1))
+            {
+                Builder.lenTR--;
+                Builder.crosswordArray.pop(); 
+            }
+            else if(Builder.isColumnEmpty(0))
+            {
+                for(let i = 0; i < Builder.lenTR; i++)
+                {
+                    Builder.crosswordArray[i].shift();
+                }      
+                Builder.lenTD--;
+            }
+            else if(Builder.isColumnEmpty(Builder.lenTD - 1))
+            {
+                for(let i = 0; i < Builder.lenTR; i++)
+                {
+                    Builder.crosswordArray[i].pop();
+                }
+                Builder.lenTD--;
+            }
+            else
+            {
+                break;
+            }
+        }
     },
 
     after_render: async () =>
@@ -379,6 +501,7 @@ let Builder = {
 
         document.querySelector(".save-button").addEventListener("click", () =>
         {
+            Builder.deleteEmptyRowsAndColumns();
             Builder.saveToDb();
         });
 

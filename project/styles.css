@@ -38,7 +38,7 @@ td b {
 td input[type=text]{
     text-align:center;
     text-shadow: 0 0 0 black;
-    color: transparent;
+    /*color: transparent;*/
     width:98%;
     height: 100%;
     border:none;
@@ -192,6 +192,21 @@ main{
 .question p{
     width: 95%;
     margin: 5px;
+    border: 1px solid #000;
+    cursor: help;
+}
+
+.emptyCell{
+    background: black;
+}
+
+.wrongLetter
+{
+    color: red;
+}
+
+.notWrongLetter{
+    color: green;
 }
 
 .clue-header{
@@ -295,6 +310,11 @@ label{
     content: "\f023";
 }
 
+.findQuestion
+{
+    background-color: yellow;
+}
+
 @media (max-width: 1300px){
 
     *{
@@ -316,9 +336,12 @@ label{
         width: 50vw;
     }
 
+    table{
+        margin: auto;
+    }
     td{
-        width: 5vw;
-        height: 5vw;
+        width: 50px;
+        height: 50px;
     }
 
     .sizes{
@@ -327,7 +350,7 @@ label{
         justify-content: space-around;
     }
 
-    
+
     td b {
         font-size: 2vw;
     }
@@ -340,6 +363,7 @@ label{
     .save-button{
         order: -1;
         margin-top: 10px;
+        margin-bottom: 10px;
         width: 15vw;
         height: 5vw;
     }
